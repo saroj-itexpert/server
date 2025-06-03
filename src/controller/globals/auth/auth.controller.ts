@@ -17,3 +17,6 @@ class AuthController{
 
 //static cha bhane sidhai exports gare pugcha
 module.exports = AuthController
+
+
+//Authentication Table creation(model) -->Controller-->Routing(API)
