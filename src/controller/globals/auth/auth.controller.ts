@@ -73,13 +73,39 @@ class AuthController {
     private static readonly JWT_SECRET = process.env.JWT_SECRET || "topsecret";
     private static readonly RESET_TOKEN_EXPIRY = 3600000; // 1 hour in milliseconds
 
+// New method to validate password strength
+    private static validatePasswordStrength(password: string): { isValid: boolean; message: string } {
+        // Password must be at least 8 characters, include uppercase, lowercase, number, and special character
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        
+        if (!passwordRegex.test(password)) {
+            return {
+                isValid: false,
+                message: "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).",
+            };
+        }
+        return { isValid: true, message: "Password is strong" };
+        
+    }
+
+
+
     static async registerUser(req: Request, res: Response) {
+        2563
         const { username, password, email } = req.body;
 
         if (!username || !password || !email) {
             res.status(400).json({
                 message: "Please provide username, password email"
             })
+            return;
+        }
+        // Validate password strength
+        const passwordCheck = this.validatePasswordStrength(password);
+        if (!passwordCheck.isValid) {
+            res.status(400).json({
+                message: passwordCheck.message,
+            });
             return;
         }
         try {
