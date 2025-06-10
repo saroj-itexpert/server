@@ -68,7 +68,13 @@ import { v4 as uuidv4 } from 'uuid';
 //oauth  google login, fb, github, apple 3rd party through login garaune
 // email login (SSO)
 
-
+      //we can also use findAll 
+            // const data = await User.findAll({ where: email });
+            // if (data.length == 0) {
+            //     res.status(404).json({
+            //         message: "Not Registered!"
+            //     })
+            // }
 class AuthController {
     private static readonly JWT_SECRET = process.env.JWT_SECRET || "topsecret";
     private static readonly RESET_TOKEN_EXPIRY = 3600000; // 1 hour in milliseconds
@@ -90,8 +96,10 @@ class AuthController {
 
 
 
+
+
     static async registerUser(req: Request, res: Response) {
-        2563
+        
         const { username, password, email } = req.body;
 
         if (!username || !password || !email) {
@@ -149,16 +157,7 @@ class AuthController {
         }
         try {
             //find user by email, check if user exists or not in our users table
-            const user = await User.findOne({ where: { email } }); //equivalent to SELECT * FROM User WHERE email="saroj@example.com" AND age = 32;
-
-            //we can also use findAll 
-            const data = await User.findAll({ where: email });
-            if (data.length == 0) {
-                res.status(404).json({
-                    message: "Not Registered!"
-                })
-            }
-
+            const user = await User.findOne({ where: { email } }); //equivalent to SELECT * FROM User WHERE email="saroj@example.com" AND age = 32;   
             if (!user) {
                 res.status(401).json({
                     message: "Invalid email or password",
@@ -173,18 +172,14 @@ class AuthController {
                 });
                 return;
             }
-
             //Generate JWT Token
             const token = jwt.sign(
                 {
                     id: user.id, email: user.email,
-
                 },
                 AuthController.JWT_SECRET,
                 { expiresIn: "1h" }
             );
-
-
             //Successful login
             res.status(200).json({
                 message: "Login successful",
