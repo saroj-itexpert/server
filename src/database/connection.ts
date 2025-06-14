@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {Sequelize} from 'sequelize-typescript';
 
 //class Sequelize lai instantiate garnu paryo

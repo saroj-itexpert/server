@@ -55,7 +55,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
 import { v4 as uuidv4 } from 'uuid';
-
+import rateLimit from "express-rate-limit";
 
 //basic login : username, password 
 /*
@@ -205,6 +205,13 @@ class AuthController {
         });
     }
 
+
+    static forgotPasswordLimiter = rateLimit({
+        windowMs: 15 * 60 * 100,    //15 minutes
+        max: 5,     //limit to 5 requests per window
+        message: 'Too many password reset requests, please try again later/'
+    });
+
     static async forgotPassword(req: Request, res: Response) {
         const { email } = req.body;
 
@@ -252,6 +259,61 @@ class AuthController {
         }
 
     }
+
+static async resetPassword(req: Request, res: Response) {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+        res.status(400).json({
+            message: "Please provide reset token and new password",
+        });
+        return;
+    }
+
+    // Validate new password strength
+    const passwordCheck = this.validatePasswordStrength(newPassword);
+    if (!passwordCheck.isValid) {
+        res.status(400).json({
+            message: passwordCheck.message,
+        });
+        return;
+    }
+
+    try {
+        // Find user by reset token
+        const user = await User.findOne({ where: { resetToken: token } });
+
+        if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < Date.now()) {
+            res.status(400).json({
+                message: "Invalid or expired token",
+            });
+            return;
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password and remove reset token and expiry
+        await User.update(
+            {
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+            },
+            { where: { id: user.id } }
+        );
+
+        res.status(200).json({
+            message: "Password has been reset successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error resetting password",
+            error: (error as Error).message,
+        });
+    }
+}
+
 
 }
 export default AuthController
