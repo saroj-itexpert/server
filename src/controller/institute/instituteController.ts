@@ -2,7 +2,10 @@ import { Request, Response } from "express"
 import sequelize from "../../database/connection"
 import generateRandomInstituteNumber from "../../services/generateRandomInstituteNumber"
 class InstituteController{
+    
     static async createInstitute(req: Request , res: Response){
+        try{
+
         const {instituteName, instituteEmail, institutePhoneNumber, instituteAddress} = req.body
         const instituteVatNo = req.body.instituteVatNo || null 
         const institutePanNo = req.body.institutePanNo || null 
@@ -27,14 +30,23 @@ class InstituteController{
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )`)
-            res.status(200).json({
-                message: "Institute Created Successfully!"
-            })
-
+         
             await sequelize.query(`INSERT INTO institute_${instituteNumber}(instituteName,instituteEmail,
                 institutePhoneNumber,instituteAddress,institutePanNo,instituteVatNo) VALUES(?,?,?,?,?,?)`,{
                     replacements: [instituteName, instituteEmail, institutePhoneNumber, instituteAddress,institutePanNo,instituteVatNo]
                 })
+                  res.status(201).json({
+            message: "Institute created successfully!"
+        });
+        return;
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({
+                message: "Something went wrong",
+                error: error instanceof Error ? error.message : "Unknown error"
+            });
+        }
+        }
     }
 }
 export default InstituteController

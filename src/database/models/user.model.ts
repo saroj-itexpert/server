@@ -8,7 +8,6 @@ import { Table, Column, Model, DataType, PrimaryKey } from "sequelize-typescript
 }) 
 
 
-
 class User extends Model{
 
     
