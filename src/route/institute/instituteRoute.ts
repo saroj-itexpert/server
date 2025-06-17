@@ -1,10 +1,15 @@
-import express , {Router} from "express"
-import InstituteController from "../../controller/institute/instituteController";
-import Middleware from "../../middleware/middleware";
+import express, { Router } from "express"
 
-const router:Router = express.Router();
+import isLoggedIn from "../../middleware/middleware"
+import { createCourseTable, createInstitute, createStudentTable, createTeacherTable } from "../../controller/institute/instituteController"
 
 
-router.route("/").post( Middleware.isLoggedIn, InstituteController.createInstitute);
 
-export default router;
+const router:Router = express.Router()
+
+router.route("/").post(isLoggedIn, createInstitute ,createTeacherTable,createStudentTable,createCourseTable)
+
+
+export default router
+
+ 
